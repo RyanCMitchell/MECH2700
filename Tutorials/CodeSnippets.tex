@@ -1,0 +1,17 @@
+\documentclass{article}
+\usepackage{listings}
+\begin{document}
+
+\lstset{language=Python}
+\begin{lstlisting}
+from math import *
+def parallax_dist(alpha, beta, c):
+	alpha = float(alpha)
+    beta = float(beta)
+    c = float (c)
+    h = c * (sin(radians(alpha)) * sin(radians(beta))) / (
+    sin(radians(alpha + beta)))
+    #print float("%.4f" %h)
+    return h                                                         
+\end{lstlisting}
+\end{document}
