@@ -43,15 +43,13 @@ grav = 9.81             # Gravity in m/s^2
 #------------------------------------------------------------------
 # Start function definitions
 
-def guess(velocity, thetaDeg, timeStep=1):
+def guess(velocity, thetaDeg, timeStep=0.01):
     """
     Initial calcultaion / integration of the function using guessed
     initial conditions. The function will also be plotted to help
     visualise the scenario.
-    velocity in meters per second.
-    theta in degrees.
-    timeStep in seconds. The smaller the timeStep the more accurate
-    the function.
+    velocity in meters per second, theta in degrees, timeStep in
+    seconds. The smaller the timeStep the more accurate the function.
     """
     # Calculate / fill all the variables
     theta = radians(thetaDeg)       # Change the input angle into radians
@@ -69,7 +67,7 @@ def guess(velocity, thetaDeg, timeStep=1):
     # While the bread is in the air perform calculations.
     # As it steps through it updates the velocities and accelerations
     # so that the bread acceleration and velocity slows.
-    while trajGuessY[-1] >= 0:
+    while trajGuessY[-1] > 0:
         # New velocity equals old velocity minus the updated acceleration
         velocityX = velocityX - accelX*timeStep
         # Change the acceleraion to use the last calculated velocity
@@ -95,53 +93,174 @@ def guess(velocity, thetaDeg, timeStep=1):
     plt.xlim([-5,120])              # Set the x-axis limits
     plt.show()                      # Make sure the graph appears
 
-    print 'The bread lands at: {0:.0f}, {1:.0f}'.format(
+    print 'The bread lands at: {0:.3f}, {1:.3f}'.format(
         trajGuessX[-1], trajGuessY[-1])
     return
 
 
-def noDrag():
+def noDrag(velocity, thetaDeg, timeStep=0.001):
     """
-    Comments here
+    Initial calcultaion / integration of the function using guessed
+    initial conditions. The function will also be plotted to help
+    visualise the scenario. This function does not include any drag
+    coefficients and as such is a simplified version of the 'guess'
+    function.
+    
+    velocity in meters per second, theta in degrees and timeStep in
+    seconds. The smaller the timeStep the more accurate the function.
     """
-    trajNoDragX = trajX          # Copy the lists for the guess
-    trajNoDragY = trajY
+    # Calculate / fill all the variables
+    theta = radians(thetaDeg)       # Change the input angle into radians
+    trajNoDragX = []                # Create an empty list
+    trajNoDragX.append(trajXY[0])   # Initialise the list
+    trajNoDragY = []                # Create an empty list
+    trajNoDragY.append(trajXY[1])   # Initialise the list
+    accelX = 0                      # No drag in the x-direction
+    accelY = grav                   # Assign gravity to y-acceleration
+    velocityX = velocity*cos(theta) # Calculate the x-velocity component
+    velocityY = velocity*sin(theta) # Calculate the y-velocity component
 
-    # Execute the mathematics and build a list of the coordinates
-    #maths goes here
+    # Execute the mathematics and build a list of the coordinates.
+    # While the bread is in the air perform calculations.
+    # As it steps through it updates the velocities and accelerations
+    # so that the bread acceleration and velocity slows.
+    # This function does not include any x-accelerations due to zero drag
+    while trajNoDragY[-1] > 0:
+        # New velocity equals old velocity minus the updated acceleration
+        velocityY = velocityY - accelY*timeStep
+        # Positions equal last position (in the list) + distance moved
+        x = trajNoDragX[-1] + velocityX*timeStep
+        y = trajNoDragY[-1] + velocityY*timeStep
+        trajNoDragX.append(x)    # Append the x-coord to the list
+        trajNoDragY.append(y)    # Append the y-coord to the list
 
     # Plot the graphs of the trajectory and the physical environment
-    #plt.plot(trajGuessX, trajGuessY, 'r--')
-    #plt.hold()
-    #plt.plot(physEnvX, physEnvY, 'b')
-    #plt.grid(b=True, which='major', color='k', linestyle='-')
-    #plt.show()
+    env = plt.plot(physEnvX, physEnvY, 'b', label='Environment')
+    traj = plt.plot(trajNoDragX, trajNoDragY, 'r--', label='Trajectory')
+    plt.grid(b=True, which='major', color='k', linestyle='-')
+    plt.suptitle('Bread Slingshot - No Drag')   # Set the graph title
+    plt.legend(loc='upper right')               # Set the legend location
+    plt.ylabel('Height (m)')                    # Set the y-axis label
+    plt.xlabel('Distance (m)')                  # Set the x-axis label
+    plt.ylim([-5,50])                           # Set the y-axis limits
+    plt.xlim([-5,120])                          # Set the x-axis limits
+    plt.show()                                  # Make the graph appear
+
+    print 'The bread lands at: {0:.3f}, {1:.3f}'.format(
+        trajNoDragX[-1], trajNoDragY[-1])
     
     return
 
 
-def optimal():
+def optimal(timeStep=0.1):
     """
-    Comments here
+    Opimisation calculation for the initial launch velocity and angle.
+    The optimal solution will achieve the perfect trajectory angle for
+    the smallest possible velocity. This is due to the physical strength
+    limitations of the students' system. This solution includes drag.
     """
-    trajOptimalX = trajX          # Copy the lists for the guess
-    trajOptimalY = trajY
+    # Calculate / fill all the variables
+    trajOptimalX = []               # Create an empty list
+    trajOptimalY = []               # Create an empty list
 
-    # Execute the mathematics and build a list of the coordinates
-    #maths goes here
+    # Nested for-loops that will cycle through every angle per 1m/s step
+    # in velocity. This will allow the minimun velocity to be used and
+    # find the first angle that will achieve this.
+    for velocity in range(0,51):    # Loop through m/s values 0 - 50
+        print 'Testing velocity {0:.0f}'.format(velocity)
+        for thetaDeg in range(0,90):   # Loop through degree values 0 - 89
+            #print 'Testing theta {0:.0f}'.format(thetaDeg)
 
-    # Plot the graphs of the trajectory and the physical environment
-    #plt.plot(trajGuessX, trajGuessY, 'r--')
-    #plt.hold()
-    #plt.plot(physEnvX, physEnvY, 'b')
-    #plt.grid(b=True, which='major', color='k', linestyle='-')
-    #plt.show()
+
+            trajOptimalX[:] = []            # Empty list on each pass
+            trajOptimalY[:] = []            # Empty list on each pass
+            trajOptimalX.append(trajXY[0])  # Re-initialise the list
+            trajOptimalY.append(trajXY[1])  # Re-initialise the list
+
+            theta = radians(thetaDeg)       # Change the angle into radians
+            accelX = ((rho*drag*pow((velocity*cos(theta)),2)*pi*pow(
+                radius,2))/(2*mass))        # Calculate the x-accel
+            accelY = grav                   # Assign gravity to y-accel
+            velocityX = velocity*cos(theta) # Calculate the x-vel component
+            velocityY = velocity*sin(theta) # Calculate the y-vel component
+
+            # looking for clearance at (84,9)
     
+            # Execute the mathematics and build a list of the coordinates.
+            # While the bread is in the air perform calculations.
+            # As it steps through it updates the velocities and
+            # accelerations so that the bread acceleration and velocity
+            # slows.
+            while trajOptimalY[-1] > 0:
+
+                # As soon as we find a solution finish off the
+                # calculations, plot the graph and return
+                if trajOptimalX[-1] > 84 and trajOptimalY[-1] > 9:
+                    print 'Whithin firing range, finalising cordinates...'
+                    while trajOptimalY[-1] >= 1:
+                        # New velocity equals old velocity minus the
+                        # updated acceleration
+                        velocityX = velocityX - accelX*timeStep
+                        # Change the acceleraion to use the last calculated
+                        # velocity
+                        accelX = ((rho*drag*pow(velocityX,2)*pi*
+                                   pow(radius,2))/(2*mass))
+                        # New velocity equals old velocity minus the
+                        # updated acceleration
+                        velocityY = velocityY - accelY*timeStep
+                        # Positions equal last position (in the list) +
+                        # distance moved
+                        x = trajOptimalX[-1] + velocityX*timeStep
+                        y = trajOptimalY[-1] + velocityY*timeStep
+                        trajOptimalX.append(x)    # Append x-coord to list
+                        trajOptimalY.append(y)    # Append y-coord to list
+                    
+                    # Plot the graphs of the trajectory and the physical
+                    # environment
+                    env = plt.plot(physEnvX, physEnvY, 'b',
+                                   label='Environment')
+                    traj = plt.plot(trajOptimalX, trajOptimalY,
+                                    'r--', label='Trajectory')
+                    plt.grid(b=True, which='major', color='k',
+                             linestyle='-')
+                    # Set the graph title
+                    plt.suptitle('Bread Slingshot - Optimal')
+                    plt.legend(loc='upper right')   # Set legend location
+                    plt.ylabel('Height (m)')        # Set the y-axis label
+                    plt.xlabel('Distance (m)')      # Set the x-axis label
+                    plt.ylim([-5,50])               # Set the y-axis limits
+                    plt.xlim([-5,120])              # Set the x-axis limits
+                    plt.show()                      # Make the graph appear
+
+                    print 'The bread lands at: {0:.3f}, {1:.3f}'.format(
+                        trajOptimalX[-1], trajOptimalY[-1])
+                    print 'The optimal shooting solution is {0:.0f}m/s '\
+                          '({1:.2f}km/h) and {2:.0f} degrees'\
+                          .format(velocity, velocity*3.6, degrees(theta))
+                    return                   
+                
+                # New velocity equals old velocity minus the updated
+                # acceleration
+                velocityX = velocityX - accelX*timeStep
+                # Change the acceleraion to use the last calculated
+                # velocity
+                accelX = ((rho*drag*pow(velocityX,2)*pi*pow(radius,2))
+                           /(2*mass))
+                # New velocity equals old velocity minus the updated
+                # acceleration
+                velocityY = velocityY - accelY*timeStep
+                # Positions equal last position (in the list) + distance
+                # moved
+                x = trajOptimalX[-1] + velocityX*timeStep
+                y = trajOptimalY[-1] + velocityY*timeStep
+                trajOptimalX.append(x)    # Append the x-coord to the list
+                trajOptimalY.append(y)    # Append the y-coord to the list
+
+    print 'A solution was not found'    
     return
 
 
-#if __name__ == "__main__":
-print("Ready for action! ;)")
+print("Functions locked, loaded and ready for firing!")
 
 
 
