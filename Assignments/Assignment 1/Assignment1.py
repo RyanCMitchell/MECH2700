@@ -98,7 +98,7 @@ def guess(velocity, thetaDeg, timeStep=0.01):
     return
 
 
-def noDrag(velocity, thetaDeg, timeStep=0.001):
+def noDrag(velocity, thetaDeg, timeStep=0.01):
     """
     Initial calcultaion / integration of the function using guessed
     initial conditions. The function will also be plotted to help
@@ -152,7 +152,7 @@ def noDrag(velocity, thetaDeg, timeStep=0.001):
     return
 
 
-def optimal(timeStep=0.1):
+def optimal(timeStep=0.01):
     """
     Opimisation calculation for the initial launch velocity and angle.
     The optimal solution will achieve the perfect trajectory angle for
