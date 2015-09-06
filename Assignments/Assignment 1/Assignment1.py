@@ -31,14 +31,8 @@ for i in range(84,101,1):   # Continuation of ground
     physEnvX.append(i)
     physEnvY.append(0)
 
-#plt.plot(physEnvX, physEnvY, 'b')
-#plt.grid(b=True, which='major', color='k', linestyle='-')
-#plt.show()
-
-
 # Global definitions of the variables for ease of editing
-trajX = [0]             # Initial x-coordinate in a list
-trajY = [1.8]           # Initial y-coordinate in a list
+trajXY = (0, 1.8)       # Initial x-coordinate in a list
 drag = 0.55             # Dimensionless drag coefficient
 diameter = 0.15         # Diameter of the loaf of bread in meters
 radius = diameter / 2   # Radius of the loaf of bread in meters
@@ -59,55 +53,52 @@ def guess(velocity, thetaDeg, timeStep=1):
     timeStep in seconds. The smaller the timeStep the more accurate
     the function.
     """
-    
-    # Clear all the variables
-    theta = 0
-    trajGuessX = []
-    trajGuessY = []
-    accelX = 0
-    accelY = 0
-    velocityX = 0
-    velocityY = 0
-
     # Calculate / fill all the variables
-    theta = radians(thetaDeg)
-    trajGuessX = trajX
-    trajGuessY = trajY
-    #print trajGuessY
+    theta = radians(thetaDeg)       # Change the input angle into radians
+    trajGuessX = []                 # Create an empty list
+    trajGuessX.append(trajXY[0])    # Initialise the list
+    trajGuessY = []                 # Create an empty list
+    trajGuessY.append(trajXY[1])    # Initialise the list
     accelX = ((rho*drag*pow((velocity*cos(theta)),2)*pi*pow(radius,2))
-              /(2*mass))
-    accelY = grav
-    velocityX = velocity*cos(theta)
-    velocityY = velocity*sin(theta)
+              /(2*mass))            # Calculate the x-acceleration
+    accelY = grav                   # Assign gravity to y-acceleration
+    velocityX = velocity*cos(theta) # Calculate the x-velocity component
+    velocityY = velocity*sin(theta) # Calculate the y-velocity component
 
-    # Execute the mathematics and build a list of the coordinates
+    # Execute the mathematics and build a list of the coordinates.
+    # While the bread is in the air perform calculations.
+    # As it steps through it updates the velocities and accelerations
+    # so that the bread acceleration and velocity slows.
     while trajGuessY[-1] >= 0:
+        # New velocity equals old velocity minus the updated acceleration
         velocityX = velocityX - accelX*timeStep
+        # Change the acceleraion to use the last calculated velocity
         accelX = ((rho*drag*pow(velocityX,2)*pi*pow(radius,2))
                    /(2*mass))
+        # New velocity equals old velocity minus the updated acceleration
         velocityY = velocityY - accelY*timeStep
+        # Positions equal last position (in the list) + distance moved
         x = trajGuessX[-1] + velocityX*timeStep
         y = trajGuessY[-1] + velocityY*timeStep
-        trajGuessX.append(x)
-        trajGuessY.append(y)
-
-    #print trajGuessX[-1]
+        trajGuessX.append(x)    # Append the x-coord to the list
+        trajGuessY.append(y)    # Append the y-coord to the list
 
     # Plot the graphs of the trajectory and the physical environment
     env = plt.plot(physEnvX, physEnvY, 'b', label='Environment')
     traj = plt.plot(trajGuessX, trajGuessY, 'r--', label='Trajectory')
     plt.grid(b=True, which='major', color='k', linestyle='-')
-    plt.suptitle('Bread Slingshot')
-    plt.legend(loc='upper right')
-    plt.ylabel('Height (m)')
-    plt.xlabel('Distance (m)')
-    plt.ylim([-5,50])
-    plt.xlim([-5,120])
-    plt.show()
+    plt.suptitle('Bread Slingshot') # Set the graph title
+    plt.legend(loc='upper right')   # Set the legend location
+    plt.ylabel('Height (m)')        # Set the y-axis label
+    plt.xlabel('Distance (m)')      # Set the x-axis label
+    plt.ylim([-5,50])               # Set the y-axis limits
+    plt.xlim([-5,120])              # Set the x-axis limits
+    plt.show()                      # Make sure the graph appears
 
-    print trajY
-    
+    print 'The bread lands at: {0:.0f}, {1:.0f}'.format(
+        trajGuessX[-1], trajGuessY[-1])
     return
+
 
 def noDrag():
     """
