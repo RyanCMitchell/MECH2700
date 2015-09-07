@@ -32,7 +32,7 @@ for i in range(84,101,1):   # Continuation of ground
     physEnvY.append(0)
 
 # Global definitions of the variables for ease of editing
-trajXY = (0, 1.8)       # Initial x-coordinate in a list
+trajXY = (0, 1.8)       # Initial x and y coordinates in a tuple (immutable)
 drag = 0.55             # Dimensionless drag coefficient
 diameter = 0.15         # Diameter of the loaf of bread in meters
 radius = diameter / 2   # Radius of the loaf of bread in meters
