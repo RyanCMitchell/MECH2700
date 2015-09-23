@@ -66,6 +66,20 @@ def CubeRootNewton(number):
         iterations += 1
     return root, iterations
 
+
+def thermo(tol=0.01, iterations=100):
+    h = 8.3
+    eps = 0.9
+    sig = 5.669e-8
+    Ts = 278
+    Tg = 302
+    loopCount = 0
+    while loopCount < iterations:
+        loopCount += 1
+    return sig
+
+
+
 print 'Ready for action'
 
 '''
