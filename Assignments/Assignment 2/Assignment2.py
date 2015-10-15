@@ -20,23 +20,47 @@ import numpy as np
 #------------------------------------------------------------------
 # Start function definitions
 
-def guess():
+def Filter(w, Vin=5):
     """
     Comments
     """
-    # Plot the graphs of the trajectory and the physical environment
-    env = plt.plot(physEnvX, physEnvY, 'b', label='Environment')
-    traj = plt.plot(trajXY[0], trajXY[1], 'r--', label='Trajectory')
-    plt.grid(b=True, which='major', color='k', linestyle='-')
-    plt.suptitle('title')           # Set the graph title
-    plt.legend(loc='upper right')   # Set the legend location
-    plt.ylabel('y-axis')            # Set the y-axis label
-    plt.xlabel('x-axis')            # Set the x-axis label
-    plt.ylim([-5,50])               # Set the y-axis limits
-    plt.xlim([-5,120])              # Set the x-axis limits
-    # Save the graph as ___ with a resolution of dpi
-    plt.savefig('graph.png', dpi=400)
-    plt.show()                      # Make sure the graph appears
+    # Constants
+    R1 = 378.0        # Ohms
+    R2 = R1     
+    C1 = 532e-12    # 532pF  
+    C2 = 944e-12    # 944pF
+    C3 = C2
+    C4 = C1
+    L1 = 91.3e-6    # 91.3uH
+    L2 = 101e-6     # 101uH
+    L3 = L1
+    j = np.complex(1j)
+    # print 'j = ', j, ' & Type(j)', type(j)
+    
+    # Create A - Matrix and answer, b = Array, both as floats
+    A = np.array([[R1, (-j/(w*C1)), 0, 0, 0, 0, 0, 0, 0],
+                  [0, (-j/(w*C1)), -j*w*L1, (j/(w*C2)), 0, 0, 0, 0, 0],
+                  [0, 0, 0, (-j/(w*C2)), -j*w*L2, (j/(w*C3)), 0, 0, 0],
+                  [0, 0, 0, 0, 0, (-j/(w*C3)), -j*w*L3, (j/(w*C4)), 0],
+                  [0, 0, 0, 0, 0, 0, 0, (-j/(w*C4)), -R2],
+                  [1, -1, -1, 0, 0, 0, 0, 0, 0],
+                  [0, 0, 1, -1, -1, 0, 0, 0, 0],
+                  [0, 0, 0, 0, 1, -1, -1, 0, 0],
+                  [0, 0, 0, 0, 0, 0, 1, -1, -1]])
+    b = np.array([Vin, 0, 0, 0, 0, 0, 0, 0, 0], float)
+    # print 'A = ', A, ' & Type(A) = ', type(A), ' & shape = ', A.shape
+    # print 'b = ', b, ' & Type(b) = ', type(b), ' & shape = ', b.shape
+
+    # Check for singularity in matrix
+    if np.linalg.det(A) == 0:
+        print "Singular"
+        return -1
+    else:
+        i = np.linalg.solve(A, b)
+        #print 'i = ', i, ' & shape = ', i.shape
+
+    # print 'check...'
+    # print 'Ai = ', np.dot(A,i)
 
     print 'The bread lands at: {0:.3f}, {1:.3f}'.format(0, 1)
     return

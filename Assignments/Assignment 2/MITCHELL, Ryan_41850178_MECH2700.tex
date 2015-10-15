@@ -4,6 +4,8 @@
 \usepackage{fullpage}
 \usepackage{graphicx}
 \usepackage{tikz}
+\usepackage[procnames]{listings}
+\usepackage{color}
 
 % New commands
 \newcommand*\tageq{\refstepcounter{equation}\tag{\theequation}}
@@ -11,6 +13,22 @@
             \node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
 
 \begin{document}
+
+% Colouring of Python Code
+\definecolor{keywords}{RGB}{255,0,90}
+\definecolor{comments}{RGB}{0,0,113}
+\definecolor{red}{RGB}{160,0,0}
+\definecolor{green}{RGB}{0,150,0}
+ 
+\lstset{language=Python, 
+        basicstyle=\ttfamily\small, 
+        keywordstyle=\color{keywords},
+        commentstyle=\color{comments},
+        stringstyle=\color{red},
+        showstringspaces=false,
+        identifierstyle=\color{green},
+        procnamekeys={def,class}}
+
 
 \begin{titlepage}
 \renewcommand{\baselinestretch}{1.0}
@@ -41,9 +59,36 @@
 \newpage
 
 \section{Introduction}
+
+Most systems display attributes of both a transient and steady state response. A transient response, also known as the warm up period, is the initial flow that moves through the network and charges / fills storage devices. The network has to be able to contain these surges and influxes without breaking. As the system reaches an equilibrium condition, also known as the steady state, it becomes easier and more predictable to model.\\
+
+Once the system has reached steady state the system can be analysed analytically in a number of ways. Simple systems can be analysed by hand but as the complexity of the system grows the time requirement for hand calculations increases dramatically. If a steady state system can be described in the form of a set of constraints on all the unknown flow quantities, and the vector of values satisfies all the equations simultaneously, a computer can be used to decrease computational time. If the simultaneous equations can be modelled as a matrix, the processing time is further reduced.\\
+
+This assignment looks at two network systems and the methods behind solving them:
+
+\begin{enumerate}
+  \item A Chebyshev Filter
+  \item A Water-Supply Network
+\end{enumerate}
+
+A Chebyshev Filter is a high-order filter excellent performance. It is built with passive components and filters electrical signals. The filter contains a system of linear constraint equations but the coefficients as well as the unknown values can be complex numbers. The Water-Supply Network is a network of pipes with the flow of water being described / given. The network contains a system of non-linear constraint equations but the coefficients are real numbers.\\
+
+\bigskip
+This assignment makes use of the Gauss-Jordan matrix elimination method. This method uses row-reduction to  modify the values of the lower left-hand corner of the matrix until it is filled with zeros. Once complete the matrix is said to be an upper triangular matrix in row echelon form. Once all the leading non-zero entries on the diagonal are reduced to 1 the matrix is a reduced row echelon matrix. There are three types of elementary row operations:
+\begin{enumerate}
+  \item Swapping two rows,
+  \item Multiplying a row by a non-zero number
+  \item Adding a multiple of one row to another row
+\end{enumerate}
+This solver has been designed to handle floats and complex numbers and the code can be seen in Section \ref{sec:GaussJordanCode}. 
+
 \newpage
 
-\section{A Chebyshev Filter For Electrical Signals}
+\section{General Gauss-Jordan Function} \label{sec:GaussJordanCode}
+\lstinputlisting[language=Python]{gjSolver.py}
+\newpage
+
+\section{A Chebyshev Filter For Electrical Signals} \label{sec:Cheb}
 
 \medskip	
 \begin{figure}[h]
@@ -147,7 +192,20 @@ $\begin{bmatrix}
 \end{bmatrix}$
 
 Need to check for singularity of the matrix as the first step of the function!
+
+\subsection{Conclusion}
+
 \newpage
 
-\section{A Water-Supply Network}
+\section{A Water-Supply Network} \label{sec:pipes}
+
+\medskip
+\begin{figure}[h]
+	\centering	\includegraphics[width=0.6\linewidth]{Images/PipeNetwork.png}
+	\caption{A Water-Supply Network}
+	\label{fig:PipeNetwork}
+\end{figure}
+
+\subsection{Conclusion}
+
 \end{document}
