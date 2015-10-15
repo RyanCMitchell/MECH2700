@@ -11,24 +11,11 @@ R. C. Mitchell
 # Import appropriate modules
 from math import *
 import matplotlib.pylab as plt
+import numpy as np
 
 #------------------------------------------------------------------
-# Global definitions of the physical environment for plotting
-# purposes to help visualise the scenario.
-physEnvY = [1.8,0]          # Slingshot height
-physEnvX = [0,0.5]          # Slingshot
-for i in range(1,76,1):     # River
-    physEnvX.append(i)
-    physEnvY.append(0)
-
 # Global definitions of the variables for ease of editing
-trajXY = (0, 1.8)       # Initial x and y coordinates in a tuple (immutable)
-drag = 0.55             # Dimensionless drag coefficient
-diameter = 0            # Diameter of the loaf of bread in meters
-radius = diameter / 2   # Radius of the loaf of bread in meters
-mass = 0                # Mass of the loaf of bread in kg
-rho = 0                 # Density of the ambient air in kg/m^3
-grav = 9.81             # Gravity in m/s^2
+
 
 #------------------------------------------------------------------
 # Start function definitions
@@ -55,7 +42,7 @@ def guess():
     return
 
 
-print("Functions locked, loaded and ready for firing!")
+print("Steady on there! Lets take it nice and slow...")
 
 
 

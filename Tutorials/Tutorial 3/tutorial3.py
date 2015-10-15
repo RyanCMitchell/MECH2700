@@ -10,6 +10,7 @@ R. C. Mitchell
 
 from math import *
 import matplotlib.pylab as plt
+from random import *
 
 #------------------------------------------------------------------
 # Global definitions
@@ -67,18 +68,73 @@ def CubeRootNewton(number):
     return root, iterations
 
 
-def thermo(tol=0.01, iterations=100):
-    h = 8.3
-    eps = 0.9
-    sig = 5.669e-8
-    Ts = 278
-    Tg = 302
+def thermo(Tc, tol=0.01, iterations=100):
+    """
+    Question 3:
+    Calculates the temperature of the gas measured by the thermometer
+    using the bisection method. Ts must be guessed first.
+    """
+    h = 8.3         # Convection heat transfer coefficient
+    eps = 0.9       # Emissivity of the sensing element
+    sig = 5.669e-8  # Stefan-Boltzmann constant
+    Ts = 278        # Wall temperature
+    Tg = 302        # Gas Temperature
+    Tc = Tc         # Measured Temp -> what we're looking for
+    a = -(h/(sig*eps))
+    b = pow(Ts,4) + ((h*Tg)/(sig*eps))
+    #print a+b
+
+    # quick function for determining the sign of a number
+    sign = lambda x: copysign(1, x)
+    
     loopCount = 0
     while loopCount < iterations:
+        c = (a+b)/2
+        print c
+        if Tc == a+b or (b-a)/2 < tol:   # Solution found
+            return c
+        elif a+b == sign(a):
+            a = c
+        else:
+            b = c
+
         loopCount += 1
-    return sig
+    return -1
 
+def estimatePi(number=500000):
+    """
+    Question 4:
+    Approximates the value of Pi/4 using a Monte Carlo simulation within
+    a unit square. Results are plotted.
+    """
+    x = []
+    y = []
+    count = 0
+    while count <= number:
+        # coordinates for use
+        xcoord = random()
+        ycoord = random()
 
+        # add coordinates to the list
+        x.append(xcoord)
+        y.append(ycoord)
+        
+        count += 1          # increment counter
+
+    '''
+    # Plot any graphs required
+    env = plt.plot(physEnvX, physEnvY, 'b', label='Environment')
+    traj = plt.plot(trajNoDragX, trajNoDragY, 'r--', label='Trajectory')
+    plt.grid(b=True, which='major', color='k', linestyle='-')
+    plt.suptitle('Bread Slingshot - No Drag')   # Set the graph title
+    plt.legend(loc='upper right')               # Set the legend location
+    plt.ylabel('Height (m)')                    # Set the y-axis label
+    plt.xlabel('Distance (m)')                  # Set the x-axis label
+    plt.ylim([-5,50])                           # Set the y-axis limits
+    plt.xlim([-5,120])                          # Set the x-axis limits
+    plt.show()                                 # Make the graph appear
+    '''
+    return x, y
 
 print 'Ready for action'
 
