@@ -20,12 +20,17 @@ import numpy as np
 #------------------------------------------------------------------
 # Start function definitions
 
-def Filter(w, Vin=5):
+def TransferFunction(w, Vin=5):
     """
-    Comments
+    This function calculates the Transfer Function of the Chebyshev
+    circuit. The Tranfer Function is an independant multiplication
+    factor; regardless of vhat is selected for Vin, the result will
+    be the same for the same frequency.
+    w --> frequency in Hertz (limit from 10Hz to 10MHz)
+    Vin --> Volatge in, in Volts
     """
     # Constants
-    R1 = 378.0        # Ohms
+    R1 = 378.0      # Ohms
     R2 = R1     
     C1 = 532e-12    # 532pF  
     C2 = 944e-12    # 944pF
@@ -37,37 +42,90 @@ def Filter(w, Vin=5):
     j = np.complex(1j)
     # print 'j = ', j, ' & Type(j)', type(j)
     
-    # Create A - Matrix and answer, b = Array, both as floats
-    A = np.array([[R1, (-j/(w*C1)), 0, 0, 0, 0, 0, 0, 0],
-                  [0, (-j/(w*C1)), -j*w*L1, (j/(w*C2)), 0, 0, 0, 0, 0],
-                  [0, 0, 0, (-j/(w*C2)), -j*w*L2, (j/(w*C3)), 0, 0, 0],
-                  [0, 0, 0, 0, 0, (-j/(w*C3)), -j*w*L3, (j/(w*C4)), 0],
-                  [0, 0, 0, 0, 0, 0, 0, (-j/(w*C4)), -R2],
-                  [1, -1, -1, 0, 0, 0, 0, 0, 0],
-                  [0, 0, 1, -1, -1, 0, 0, 0, 0],
-                  [0, 0, 0, 0, 1, -1, -1, 0, 0],
-                  [0, 0, 0, 0, 0, 0, 1, -1, -1]])
-    b = np.array([Vin, 0, 0, 0, 0, 0, 0, 0, 0], float)
+    # Create [A - Matrix] and answer, [b = Array]
+    A = np.array([[R1, (-j/(w*C1)), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                  [0.0, (-j/(w*C1)), -j*w*L1, (j/(w*C2)), 0.0, 0.0,
+                   0.0, 0.0, 0.0],
+                  [0.0, 0.0, 0.0, (-j/(w*C2)), -j*w*L2, (j/(w*C3)),
+                   0.0, 0.0, 0.0],
+                  [0.0, 0.0, 0.0, 0.0, 0.0, (-j/(w*C3)), -j*w*L3,
+                   (j/(w*C4)), 0.0],
+                  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, (-j/(w*C4)), -R2],
+                  [1, -1, -1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                  [0.0, 0.0, 1, -1, -1, 0.0, 0.0, 0.0, 0.0],
+                  [0.0, 0.0, 0.0, 0.0, 1, -1, -1, 0.0, 0.0],
+                  [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1, -1, -1]])
+    b = np.array([Vin, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], float)
     # print 'A = ', A, ' & Type(A) = ', type(A), ' & shape = ', A.shape
     # print 'b = ', b, ' & Type(b) = ', type(b), ' & shape = ', b.shape
 
-    # Check for singularity in matrix
+    # Check for singularity in matrix.
     if np.linalg.det(A) == 0:
+        # print np.absolute(np.linalg.det(A))   # Check det(A)
         print "Singular"
         return -1
+    # If non-singular continue solving
     else:
         i = np.linalg.solve(A, b)
-        #print 'i = ', i, ' & shape = ', i.shape
+        # print 'i = ', i, ' & shape = ', i.shape   # double check format
+        # print i[-1]                               # check last element
 
+    # Checks to see the solution vector is correct
     # print 'check...'
     # print 'Ai = ', np.dot(A,i)
 
-    print 'The bread lands at: {0:.3f}, {1:.3f}'.format(0, 1)
-    return
+    Vout = R2 * np.absolute(i[-1])  # Vout = R2 * magnitude of last current
+
+    return Vout/Vin
+
+def Bode(start=10, end=10e7):
+    """
+    Makes use of TransferFunction to calculate the transfer function for
+    a range of frequencies and plots the frequency response both linearly
+    and on a semi-log (frequency axis).
+    No values are required. The default range is 10Hz to 10MHz and cannot
+    be extended but can be narrowed.
+    """
+
+    Magnitude = []
+    freq = []
+    incrementer = 100
+    
+    for i in xrange(int(start), int(end), incrementer):
+        freq.append(i)
+        #print 'f = ', freq
+        Magnitude.append(20*log(TransferFunction(i, 1), 10))
+        #print 'Mag = ', Magnitude
+        Gain = 20*log(TransferFunction(int(start), 1), 10)
+
+        if i > int(start) + incrementer:
+            if 0 < Magnitude[-1] - Magnitude[-2] and Magnitude[-1] - Magnitude[-2] < 1:
+                cutOff = freq[-1]
+
+    print 'Cut Off Freq = ', cutOff
+    print 'Gain = ', Gain
+
+     
+
+    # Plot the graphs of the trajectory and the physical environment
+    # Only tried running 1 plot at a time. Comment out the other one.
+    bode = plt.plot(freq, Magnitude, 'b', label='Frequency Response')
+    #bode = plt.semilogx(freq, Magnitude, 'b', label='Frequency Response')
+    plt.grid(b=True, which='both', color='k', linestyle='-')
+    plt.suptitle('Bode Plot of Chebyshev Filter')   # Set the graph title
+    plt.legend(loc='lower left')    # Set the legend location
+    plt.ylabel('Magnitude (dB)')    # Set the y-axis label
+    plt.xlabel('Frequency (Hz)')    # Set the x-axis label
+    #plt.ylim([])                   # Set the y-axis limits
+    #plt.xlim([0, 10e7])            # Set the x-axis limits
+    plt.show()                      # Make sure the graph appears
+
+    return Gain, cutOff
 
 
 print("Steady on there! Lets take it nice and slow...")
 
+# print 'The bread lands at: {0:.3f}, {1:.3f}'.format(0, 1)
 
 
 
