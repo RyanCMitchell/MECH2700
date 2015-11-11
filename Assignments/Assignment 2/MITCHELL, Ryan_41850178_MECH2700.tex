@@ -3,6 +3,8 @@
 \usepackage{amsmath,mathtools,braket,amssymb, amsfonts}
 \usepackage{fullpage}
 \usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
 \usepackage{tikz}
 \usepackage[procnames]{listings}
 \usepackage{color}
@@ -84,7 +86,7 @@ This solver has been designed to handle floats and complex numbers and the code 
 
 \newpage
 
-\section{General Gauss-Jordan Function} \label{sec:GaussJordanCode}
+\section{General Gauss-Jordan Code} \label{sec:GaussJordanCode}
 \lstinputlisting[language=Python]{gjSolver.py}
 \newpage
 
@@ -113,9 +115,9 @@ To analyse the circuit provided in Figure \ref{fig:circuit}, Mesh and Nodal Anal
 	&\boxed{B} \quad i_{2} - i_{3} - i_{4} = 0 \tageq\label{eq:7}\\
 	&\boxed{C} \quad i_{4} - i_{5} - i_{6} = 0 \tageq\label{eq:8}\\
 	&\boxed{D} \quad i_{6} - i_{7} - i_{8} = 0 \tageq\label{eq:9}
-\end{align}\\
+\end{align}
 
-These equations can then be compiled into matrix form in order to make use of software tools.\\
+These equations can then be compiled into matrix form in order to make use of software tools. The software processes these matrices much faster and to a much higher level of accuracy than a human. Due to this faster iteration times are applicable e.g. if a small error was made in the initial calculations re-doing the computation is faster or if a passive component needed to be changed the matrix could quickly be updated and the calculations redone. It can also bee seen that the matrices contain mostly zeros and as such can be coded to take advantage of zeros and increase computational power / efficiency, however, this was not made use of for this question. The matrix was first created using the impedance equations \ref{eq:1} to \ref{eq:9},\\
 
 $\begin{bmatrix*}
 	Z_{R1} & Z_{C1} & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
@@ -153,7 +155,7 @@ $\begin{bmatrix}
 	0\\
 \end{bmatrix}$ \bigskip
 
-Which becomes \\
+which, when changed to resistive formulae, becomes,\\
 
 $\begin{bmatrix*}
 	R_{1} & \frac{-j}{\omega C_{1}} & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
@@ -189,32 +191,47 @@ $\begin{bmatrix}
 	0\\
 	0\\
 	0\\
-\end{bmatrix}$
+\end{bmatrix}$\\\medskip
 
-Need to check for singularity of the matrix as the first step of the function!\\
+As with any matrix operations the first step is to check for singularity. Numpy has a built in check that was used:
+\begin{lstlisting}
+if np.linalg.det(A) == 0
+\end{lstlisting}
+A tolerance was initially trialled but kept failing at higher frequencies as the current became negligible due to the nature of the low-pass filter.\\
 
-The cut off frequency is  5 735 210 Hertz (5.735MHz) while the initial response is -6 dB.\\
-Amazing filter - very sharp cutoff, low-pass section is very flat,
+A low-pass filter is a filter that passes signals with a frequency lower than a certain cutoff frequency and attenuates signals with frequencies higher than the cutoff frequency. The amount of attenuation for each frequency depends on the filter design. A Chebyshev filter is named after Pafnuty Chebyshev because the filter has been designed using Chebyshev polynomials.\\
+The cut off frequency is  5 735 210 Hertz (5.735MHz) while the initial gain is -6 dB.
 
-
-
-\begin{figure}[h]
+\medskip
+\begin{figure}[h] %Bode Plots
 	\centering
-	\includegraphics[width=0.5\linewidth]{Images/Bode_SemiLogX.png}
-	\caption{Chebyshev Filter Bode Plot (Log $x$ axis)}
-	\label{fig:Bode_SemiLogX}
+	\begin{subfigure}{0.4\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Images/Bode_Linear.png}
+		\caption{Linear $x$ axis}
+		\label{fig:Bode_Linear}
+	\end{subfigure}%
+	~
+	\begin{subfigure}{0.4\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{Images/Bode_SemiLogX.png}
+		\caption{Log $x$ axis}
+		\label{fig:Bode_SemiLogX}
+	\end{subfigure}
+	\caption{Chebyshev Filter Bode Plots}
+	\label{fig:Bode_Plots}
 \end{figure}
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.5\linewidth]{Images/Bode_Linear.png}
-	\caption{Chebyshev Filter Bode Plot (Linear $x$ axis)}
-	\label{fig:Bode_Linear}
-\end{figure}
 
 \subsection{Conclusion}
+The Chebyshev filter being used is an extremely good low-pass filter. It has a steady gain of -6dB (flat region of Figure \ref{fig:Bode_SemiLogX}) for a wide range of lower frequencies i.e. 10Hz to 5MHz, and drops off extremely quickly. As can be seen from Figure \ref{fig:Bode_Linear}, the Frequency response of the higher frequencies drops off significantly.\\
+
+The filter is a passive 7th order filter with both inductors, capacitors and resistors making it acutely difficult to analyse by hand and very time consuming to plot, and therefore visualise the system response. Numpy's linear algebra tools have made relatively short work (approx. 1min) of analysing the matrix, solving it and then running through with $10e^{6}$ iterations in order to plot the graphs in Figures \ref{fig:Bode_Plots}.\\
+
+
 
 \newpage
+\clearpage
 
 \section{A Water-Supply Network} \label{sec:pipes}
 
@@ -225,6 +242,22 @@ Amazing filter - very sharp cutoff, low-pass section is very flat,
 	\label{fig:PipeNetwork}
 \end{figure}
 
-\subsection{Conclusion}
+\begin{align}
+	\circled{A}\quad 45 &= f \frac{16}{\pi^2} \left(\frac{L_{i}}{D_{i}^5} Q_{i}^2 \right), \quad \text{for } Q_{0} \text{ to } Q_{4} \tageq\label{eq:10}\\\medskip
+	\circled{B}\quad 0 &=  H_{4} - H_{5} \tageq\label{eq:11}\\
+	0 &= f \frac{16}{\pi^2} \left(\frac{L_{3}}{D_{3}^5} Q_{3}^2 \right) - f \frac{16}{\pi^2} \left(\frac{L_{4}}{D_{4}^5} Q_{4}^2 \right) \notag\\
+	0 &= \frac{L_{3}}{D_{3}^5} Q_{3}^2 - \frac{L_{4}}{D_{4}^5} Q_{4}^2 \notag\\
+	\circled{C}\quad 0 &= H_{6} + H_{7) - H_{5} - H_{1} \tageq\\\label{eq:12}\\
+	0 &= \frac{L_{6}}{D_{6}^5} Q_{6}^2 + \frac{L_{7}}{D_{7}^5} Q_{7}^2  - \frac{L_{5}}{D_{5}^5} Q_{5}^2 - \frac{L_{1}}{D_{1}^5} Q_{1}^2\notag\\\medskip
+\end{align}
+\begin{align}
+
+	\boxed{2}\quad 0 &= Q_{0} - Q_{1} - Q_{6} \tageq\label{eq:13}\\\medskip
+	\boxed{3}\quad 0 &= Q_{1} - Q_{2} - 0.6m^3.s^{-1} - Q_{5}  \tageq\label{eq:14}\\\medskip
+	\boxed{4}\quad 0 &= Q_{2} - Q_{3} - Q_{4} \tageq\label{eq:15}\\\medskip
+	\boxed{6}\quad 0 &= Q_{5} + Q_{7} - 1.4m^3.s^{-1}\tageq\label{eq:16}\\\medskip
+	\boxed{7}\quad 0 &=  Q_{6} - Q_{7} \tageq\label{eq:17}\\
+	\end{align}\\
+In all honesty, I have no idea how to analyse this system - have not taken any fluids course - and did not have enough time to fully understand the initial equations and how to solve it. 
 
 \end{document}
